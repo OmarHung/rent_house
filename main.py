@@ -1,4 +1,5 @@
 import json
+import os
 
 from bs4 import BeautifulSoup
 import requests
@@ -67,6 +68,7 @@ def rent():
             d = DesiredCapabilities.CHROME
             d['goog:loggingPrefs'] = {'performance': 'ALL', 'network': 'ALL'}
             options = Options()
+            options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
             options.add_experimental_option('w3c', False)
             # 隐藏 正在受到軟體控制 這幾個字
             options.add_argument("disable-infobars")
@@ -79,7 +81,8 @@ def rent():
             options.add_argument("--disable-blink-features")
             options.add_argument("--disable-blink-features=AutomationControlled")
             options.add_argument('--headless')
-            driver = webdriver.Chrome(ChromeDriverManager(print_first_line=False).install(), desired_capabilities=d, options=options)
+            # driver = webdriver.Chrome(ChromeDriverManager(print_first_line=False).install(), desired_capabilities=d, options=options)
+            driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), desired_capabilities=d, chrome_options=options)
             driver.get(request_url)
             Newdata = []
             try:
