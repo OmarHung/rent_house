@@ -51,14 +51,14 @@ def alivetxt():
 
 def rent():
     multiRoom = 3
-    price_min = 30000
-    price_max = 45000
+    price_min = 25000
+    price_max = 38000
     url_dict = {
-        "台北市": "https://rent.591.com.tw/?kind=1&option=cold&other=near_subway&region=1",
-        "新北市": "https://rent.591.com.tw/?kind=1&option=cold&other=near_subway&region=3",
+        "台北市": "https://rent.591.com.tw/?section=3,5,1,6&option=cold&multiNotice=not_cover&region=1",
+        "新北市": "https://rent.591.com.tw/?section=26,43,38,37,44&option=cold&multiNotice=not_cover&region=3",
         # "桃園市": "https://rent.591.com.tw/?other=near_subway&region=6"
     }
-    "https://rent.591.com.tw/?kind=1&option=cold&other=near_subway&multiRoom=3"
+
     filter_query = '&multiRoom='+str(multiRoom)+'&rentprice='+str(price_min)+','+str(price_max)+'&order=posttime&orderType=desc'
 
     Tempdata = []
