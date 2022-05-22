@@ -50,6 +50,7 @@ def alivetxt():
 
 
 def rent():
+    is_init = True
     multiRoom = 3
     price_min = 25000
     price_max = 38000
@@ -123,7 +124,7 @@ def rent():
 
             Tempdata = Newdata
 
-            if list_difference and Tempdata:
+            if is_init is False and list_difference and Tempdata:
                 headers = {
                     "Authorization": 'Bearer ' + 'YEoQ6bGyN52EjmVh36uXxlRCiR7BNfdMluLWuTorlc7',
                     "Content-Type": "application/x-www-form-urlencoded"
@@ -135,6 +136,7 @@ def rent():
                     r = requests.post("https://notify-api.line.me/api/notify",
                                       headers=headers, params=params)
 
+            is_init = False
             time.sleep(300)
 
         except Exception as e:
