@@ -1,5 +1,4 @@
 import json
-import os
 
 from bs4 import BeautifulSoup
 import requests
@@ -51,10 +50,16 @@ def alivetxt():
 
 
 def rent():
-    pattern = 3
+    multiRoom = 3
     price_min = 30000
-    price_max = 50000
-    request_url = 'https://rent.591.com.tw/?kind=1&region=1&pattern='+str(pattern)+'&rentprice='+str(price_min)+','+str(price_max)+'&order=posttime&orderType=desc'
+    price_max = 45000
+    url_dict = {
+        "台北市": "https://rent.591.com.tw/?kind=1&option=cold&other=near_subway&region=1",
+        "新北市": "https://rent.591.com.tw/?kind=1&option=cold&other=near_subway&region=3",
+        # "桃園市": "https://rent.591.com.tw/?other=near_subway&region=6"
+    }
+    "https://rent.591.com.tw/?kind=1&option=cold&other=near_subway&multiRoom=3"
+    filter_query = '&multiRoom='+str(multiRoom)+'&rentprice='+str(price_min)+','+str(price_max)+'&order=posttime&orderType=desc'
 
     Tempdata = []
     RepeatedTimer(14400, alivetxt)
@@ -68,8 +73,7 @@ def rent():
             d = DesiredCapabilities.CHROME
             d['goog:loggingPrefs'] = {'performance': 'ALL', 'network': 'ALL'}
             options = Options()
-            options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
-            options.add_experimental_option('w3c', False)
+            # options.add_experimental_option('w3c', False)
             # 隐藏 正在受到軟體控制 這幾個字
             options.add_argument("disable-infobars")
             # logger = logging.getLogger('selenium.webdriver.remote.remote_connection')
@@ -81,35 +85,40 @@ def rent():
             options.add_argument("--disable-blink-features")
             options.add_argument("--disable-blink-features=AutomationControlled")
             options.add_argument('--headless')
-            # driver = webdriver.Chrome(ChromeDriverManager(print_first_line=False).install(), desired_capabilities=d, options=options)
-            driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), desired_capabilities=d, chrome_options=options)
-            driver.get(request_url)
+            driver = webdriver.Chrome(ChromeDriverManager(print_first_line=False).install(), desired_capabilities=d, options=options)
+
             Newdata = []
             try:
-                WebDriverWait(driver, 10)
-                time.sleep(5)
-                items = driver.find_elements(by=By.CSS_SELECTOR, value=".vue-list-rent-item")
-                for item in items:
-                    # print(item)
-                    # href = driver.create_web_element(item["ELEMENT"]).find_element(by=By.CSS_SELECTOR, value="a").get_property("href")
-                    # text = driver.create_web_element(item["ELEMENT"]).find_element(by=By.CSS_SELECTOR, value=".item-title").text
-                    href = item.find_element(by=By.CSS_SELECTOR, value="a").get_property("href")
-                    text = item.find_element(by=By.CSS_SELECTOR, value=".item-title").text
-                    price = item.find_element(by=By.CSS_SELECTOR, value=".item-price-text span").text
-                    # print(text)
-                    # print(href)
-                    # print(div)
-                    Newdata.append({
-                        "text": text,
-                        "href": href,
-                        "price": price
-                    })
+                for region in url_dict:
+                    url = url_dict[region] + filter_query
+                    print(url)
+                    print(region)
+                    driver.get(url)
+                    WebDriverWait(driver, 10)
+                    time.sleep(5)
+                    items = driver.find_elements(by=By.CSS_SELECTOR, value=".vue-list-rent-item")
+                    for item in items:
+                        # print(item)
+                        # href = driver.create_web_element(item["ELEMENT"]).find_element(by=By.CSS_SELECTOR, value="a").get_property("href")
+                        # text = driver.create_web_element(item["ELEMENT"]).find_element(by=By.CSS_SELECTOR, value=".item-title").text
+                        href = item.find_element(by=By.CSS_SELECTOR, value="a").get_property("href")
+                        text = item.find_element(by=By.CSS_SELECTOR, value=".item-title").text
+                        price = item.find_element(by=By.CSS_SELECTOR, value=".item-price-text span").text
+                        # print(text)
+                        # print(href)
+                        # print(div)
+                        Newdata.append({
+                            "region": region,
+                            "text": text,
+                            "href": href,
+                            "price": price
+                        })
             finally:
                 driver.quit()
 
             # print(Newdata)
             list_difference = [item for item in Newdata if item not in Tempdata]
-            payload = ['台北市 '+str(pattern)+'房 '+str(price_min)+'-'+str(price_max)+' 有新房喔 ' + i["text"] + ' $'+ i["price"] +' : 網址連結: https:' + i["href"] for i in list_difference]
+            payload = [i["region"]+' '+str(multiRoom)+'房 '+str(price_min)+'-'+str(price_max)+' 有新房喔 ' + i["text"] + ' $'+ i["price"] +' : 網址連結: https:' + i["href"] for i in list_difference]
 
 
             Tempdata = Newdata
@@ -129,7 +138,7 @@ def rent():
             time.sleep(300)
 
         except Exception as e:
-            print(e)
+            print("Exception " + str(e))
             headers = {
                 "Authorization": 'Bearer ' + 'YEoQ6bGyN52EjmVh36uXxlRCiR7BNfdMluLWuTorlc7',
                 "Content-Type": "application/x-www-form-urlencoded"
